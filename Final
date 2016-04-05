@@ -1,4 +1,4 @@
-#define aref_voltage 3.2
+#define aref_voltage 2.2
 int tempPin = A0;
 int tempReading;
 
@@ -9,6 +9,8 @@ int h = 0;
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Arduino.h>
+#include "RTClib.h"
 
 // If using software SPI (the default case):
 #define OLED_MOSI  10  //Data
@@ -18,12 +20,7 @@ int h = 0;
 #define OLED_RESET 12
 Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
-#include <Arduino.h>
-#include <Wire.h>         // this #include still required because the RTClib depends on it
-#include "RTClib.h"
-
 #if defined(ARDUINO_ARCH_SAMD)
-// for Zero, output on USB Serial console, remove line below if using programming port to program the Zero!
    #define Serial SerialUSB
 #endif
 
@@ -39,65 +36,89 @@ void setup () {
 }
 
 void loop () {
+  
+  time();
+  
+  temp();
+  
+}
+
+void time() {
+  
   DateTime now = rtc.now();
   
-    if( now.hour() < 13) {
+  if( now.hour() < 13) {
       h = now.hour();
     }
     
     else {
       h = now.hour() - 12;
     }
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    display.setCursor(0,0);
-    
-    
-    
-    display.print(now.year(), DEC);
-    display.print('/');
-    display.print(now.month(), DEC);
-    display.print('/');
-    display.print(now.day(), DEC);
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  
+  
+  
+  display.print(now.year(), DEC);
+  display.print('/');
+  display.print(now.month(), DEC);
+  display.print('/');
+  display.print(now.day(), DEC);
+  display.print(' ');
+  display.println();
+  display.println();
+  display.println();
+  
+  display.setTextSize(2.5);
+  display.print(' ');
+  display.print(' ');
+  if (h < 10) {
     display.print(' ');
-    display.println();
-    display.println();
-    display.println();
-    
-    display.setTextSize(2.5);
-    display.print(' ');
-    display.print(' ');
-    if (h < 10) {
-      display.print(' ');
-    }
-    display.print(h, DEC);
-    display.print(':');
-    if (now.minute() < 10) {
-      display.print('0');
-    }
-    display.print(now.minute(), DEC);
-    display.setTextSize(1);
-    display.print(' ');
-    if (now.second() < 10) {
-      display.print('0');
-    }
-    display.print(now.second(), DEC);
-    display.println();
-    
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    display.setCursor(90,40);
-    tempReading = analogRead(tempPin);
-    float voltage = tempReading * aref_voltage;
-    voltage /= 1024.0; 
-    float temperatureC = (voltage - 0.5) * 100 ;
-    display.print(round(temperatureC));
-    display.println(" C");
-    display.setCursor(90,50);
-    float temperatureF = (temperatureC * 9.0 / 5.0) + 32.0;
-    display.print(round(temperatureF));
-    display.println(" F");
-    display.display();
-    delay(50);
+  }
+  display.print(h, DEC);
+  display.print(':');
+  if (now.minute() < 10) {
+    display.print('0');
+  }
+  display.print(now.minute(), DEC);
+  display.setTextSize(1);
+  display.print(' ');
+  if (now.second() < 10) {
+    display.print('0');
+  }
+  display.print(now.second(), DEC);
+  display.println();
+}
+
+
+
+void temp() {
+  
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(90,40);
+  
+  
+  tempReading = analogRead(tempPin);
+  float voltage = tempReading * aref_voltage;
+  voltage /= 1024.0; 
+  float temperatureC = (voltage - 0.5) * 100 ;
+  float temperatureF = (temperatureC * 9.0 / 5.0) + 32.0;
+  
+  
+  display.print(round(temperatureC));
+  display.println(" C");
+  
+  
+  display.setCursor(90,50);
+  
+  display.print(round(temperatureF));
+  display.println(" F");
+  
+  display.display();
+  
+  
+  delay(100);
 }
